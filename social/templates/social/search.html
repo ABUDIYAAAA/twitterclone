@@ -1,0 +1,36 @@
+{% extends "landing/base.html" %}
+{% block content %}
+
+<div class="row  mt-3 container">
+  <div class="col-md-5 col-sm-12">
+    <a href="{%url 'post_list'%}" class="btn btn-light">Back To Feed</a>
+  </div>
+</div>
+
+{% for profile in profile_list %}
+  <div class="container flex-froup">
+    <div class="row justify-content-center mt-3">
+      <div class="col md-5 col-sm-12 border-bottom">
+          <div class="card" style="width: 18rem;">
+          <img src="{{profile.picture.url}}" class="card-img-top" alt="...">
+          <div class="card-body">
+            <h5 class="card-title"> {% if profile.name %}{{profile.name}}{% else %}{{profile.user}}{% endif %} </h5>
+            <p class="card-text"> {% if profile.bio %}{{profile.bio}}{% endif %}</p>
+            <a href="{% url 'profile' profile.pk%}" class="btn btn-outline-success">Go profile</a>
+          </div>
+          </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+
+
+
+
+
+
+
+
+
+{% endblock %}

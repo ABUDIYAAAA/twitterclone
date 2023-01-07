@@ -1,0 +1,82 @@
+{% extends "landing/base.html" %}
+{% block content %}
+{%load crispy_forms_tags%}
+<div class="container">
+  <div class="row justify-content-center mt-5">
+    <div class="col md-5 col-sm-12 border-bottom">
+      <a href="{% url 'chats_list' %}" class="btn btn-outline-success">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-bar-left" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M12.5 15a.5.5 0 0 1-.5-.5v-13a.5.5 0 0 1 1 0v13a.5.5 0 0 1-.5.5zM10 8a.5.5 0 0 1-.5.5H3.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L3.707 7.5H9.5a.5.5 0 0 1 .5.5z" />
+        </svg>
+      </a>
+      <div style="overflow-y: scroll; height:425px;" class="cont" id="myDiv">
+        {% for message in messages%}
+        {% if message.author == request.user %}
+        <div class="send">
+          <p class="messagep">
+            <img src="{{message.author.profile.picture.url}}" alt="" width="30px" height="25" style="border-radius:50%;float: left;margin-left:0px;">{{message.author}}
+            <span id='messagedropdown' onclick="messageDropdown({{message.pk}})" style="margin-left: 50px">...</span>
+          <ol class='d-none' id="{{message.pk}}" style="list-style: none">
+            <li><a href="{% url 'message_edit' message.pk%}">Update Message</a></li>
+            <li><a href="{%url 'message_delete' message.pk%}">Delete message</a></li>
+          </ol>
+          {% if message.image %}
+          <img src="{{message.image.url}}" alt="" height="200" width="200" style='border-radius: 10px;'><br><br>
+          {% endif %}
+          {{message.message}}<br>{{message.created_on|timesince}}
+          </p>
+        </div>
+
+
+        {% else %}
+        <p class="receive" style="margin-right: auto; margin-left: 0;"><img src="{{message.author.profile.picture.url}}" alt="" width="30px" height="25" style="border-radius: 50%;float: left;"><a
+            href='{% url 'profile' message.author.profile.pk%}'>{{message.author}}</a><br>{{message.message}}<br>{{message.created_on|timesince}}</p>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row justify-content-center mt-3">
+    <div class="col md-5 col-sm-12 border-bottom">
+      <form method="POST" enctype="multipart/form-data" class="msg">
+        {% csrf_token %}
+        {{form.message}} {{form.image}}
+        <div class="d-grid gap-2">
+          <button class="btn btn-success mt-3 mb-5">Submit!</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+</div>
+
+
+
+
+
+<script type="text/javascript">
+  const form = document.getElementByClass("msg")
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (input.value) {
+      socket.emit('chat message', input.value);
+      input.value = '';
+    }
+  });
+  var myDiv = document.getElementById("myDiv");
+  myDiv.scrollTop = myDiv.scrollHeight;
+
+  function messageDropdown(pk) {
+    var dropdown = document.getElementById(pk)
+    if (dropdown.classList.contains('d-none')) {
+      dropdown.classList.remove('d-none')
+    } else {
+      dropdown.classList.add('d-none')
+    }
+  }
+</script>
+
+{% endblock %}

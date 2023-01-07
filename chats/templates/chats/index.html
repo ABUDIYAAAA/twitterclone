@@ -1,0 +1,26 @@
+{% extends "landing/base.html" %}
+{% block content %}
+
+<div class="container">
+  <h1 style="">Your chats: </h1>
+</div>
+{% for chat in chats %}
+  <div class="container row justify-content-center mt-2 position-relative">
+    {% for user in chat.users.all %}
+      {% if user != request.user %}
+      <div lcass="container">
+        <div class="card card-body" style="display:flex;">
+              <p style="float:left;"><img src="{{user.profile.picture.url}}"alt=""width="30px"height="25"style="border-radius:50%;">{{user.username}}
+                {% for n in notifications %}
+                  {% if n.chat == chat %}
+                  <span style="height:20px;width:20px;background-color:#007BFF;border-radius:50%;float:right;text-align:center;"></span></p>
+                  {% endif %}
+                {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+    <a href="{% url 'chat' chat.pk%}" class="stretched-link"></a>
+  </div>
+{% endfor %}
+{% endblock %}

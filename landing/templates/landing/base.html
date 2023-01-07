@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+{% load static %} {%load crispy_forms_tags%}
+<html lang="en">
+  <head>
+    <!-- SocketIO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+
+    <script
+      src="https://kit.fontawesome.com/b7f3e1a730.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&family=Russo+One&family=Supermercado+One&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Ajax -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <style>
+        .notification-badge {
+          transition: 0.3s;
+          }
+
+        .notification-badge:hover {
+          cursor: pointer;
+          opacity: 0.75;
+          transition: 0.3s;
+        }
+
+        .dropdown {
+          position: relative;
+          display: inline-block;
+        }
+
+        .dropdown-content {
+          position: absolute;
+          background-color: #f1f1f1;
+          min-width: 350px;
+          box-shadow: 0px 8px 8px 0px rgba(0,0,0,0.2)
+          z-index: 1;
+          font-size: 0.9rem;
+          margin-left: auto;
+        }
+
+        .dropdown-content a {
+          color: #000;
+          padding: 12px 16px;
+          text-decoration: none;
+          display: block;
+        }
+
+        .dropdown-content a:hover {
+          background-color: #ddd;
+        }
+
+        .dropdown-item-parent {
+          position: relative;
+          display: block;
+        }
+
+        .dropdown-item-close {
+          position: absolute;
+          top: 0;
+          right: 0;
+          font-size: 1.8rem;
+          padding-right: 5px;
+          transition: 0.3s
+        }
+
+        .dropdown-item-close:hover {
+          color: rgb(180, 25, 25);
+          transition: 0.3s;
+          cursor: pointer;
+        }
+
+        .post-image {
+          max-width: 100%;
+          max-height: 200px;
+          border-radius: 10px;
+          margin-bottom: 10px;
+
+        }
+
+        /* div styles */
+
+
+        /* form syles */
+
+        .image-upload>.image {
+          display: none;
+      }
+        /* CHAT STYLES */
+
+        .wrapper {
+          margin-left: auto; margin-right: 0;
+        }
+
+
+        @use postcss-nested;
+
+        :root {
+          --send-bg: #0B93F6;
+          --send-color: white;
+          --receive-bg: #E5E5EA;
+          --receive-text: black;
+          --page-background: white;
+        }
+
+        .messagep {
+          max-width: 255px;
+          word-wrap: break-word;
+          margin-bottom: 12px;
+          line-height: 24px;
+          position: relative;
+        	padding: 10px 20px;
+          border-radius: 25px;
+
+          &:before, &:after {
+            content: "";
+        		position: absolute;
+            bottom: 0;
+            height: 25px;
+          }
+        }
+
+        .send {
+          max-width: 255px;
+          word-wrap: break-word;
+          margin-bottom: 12px;
+          line-height: 24px;
+          position: relative;
+        	padding: 10px 20px;
+          border-radius: 25px;
+
+
+        	color: var(--send-color);
+        	background: var(--send-bg);
+        	margin-left: auto;
+          margin-right: 0;
+
+        }
+        .receive {
+          max-width: 255px;
+          word-wrap: break-word;
+          margin-bottom: 12px;
+          line-height: 24px;
+          position: relative;
+        	padding: 10px 20px;
+          border-radius: 25px;
+        	background: var(--receive-bg);
+        	color: black;
+          margin-left: auto;
+          margin-right: 0;
+        }
+    </style>
+
+    <title>Social network</title>
+  </head>
+  <body>
+    {% csrf_token %}
+    <script>
+      var socket = io("https://marred-stormy-archduke.glitch.me/");
+      
+    </script>
+    {% include "landing/navbar.html" %} {% block content %}
+    <div class="d-flex justify-content-center">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    {% endblock %}
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <script type="text/javascript" src="{% static "js/social.js" %}?version=15"></script>
+    <script>
+      function ping() {
+        window.socket.emit("ping", "{{request.user}}", (response) => {
+          if (response.status != "ok") {
+            alert("Something went wrong");
+          }
+        });
+      }
+
+      setInterval(ping, 3000)
+    
+    </script>
+  </body>
+</html>

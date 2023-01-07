@@ -1,0 +1,287 @@
+{% extends "landing/base.html" %} {% load static %} {% block content %}
+{% comment %} <script type="text/javascript" src="{% static "js/chat.js" %}?version=3"></script> {% endcomment %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+  function msgRead(msgpk, msg, author) {
+    window.socket.emit("msg-read", msgpk, window.location.href.split("/")[5], msg, author,
+      (response) => {
+        if (response.status !== "ok") {
+          alert("something went wrong pls try again later");
+        } else {
+          $.ajax({
+            type: "POST",
+            url: "http://127.0.0.1:8000/real-time-chats/msg/read",
+            data: {
+              msg: msgpk,
+              csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function (e) {
+              if (e.status !== 200) {
+                alert("Something went wrong.");
+              }
+            },
+          });
+        }
+      }
+    );
+  }
+
+</script>
+<ul class="container" id="msg-output" style="overflow: scroll; height: 400px">
+  <style>
+    .chat {
+      --rad: 20px;
+      --rad-sm: 3px;
+      font: 16px/1.5 sans-serif;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .msg {
+      position: relative;
+      max-width: 75%;
+      padding: 7px 15px;
+      margin-bottom: 2px;
+    }
+
+    .msg.sent {
+      border-radius: var(--rad) var(--rad-sm) var(--rad-sm) var(--rad);
+      background: #42a5f5;
+      color: #fff;
+      /* moves it to the right */
+      margin-left: auto;
+    }
+
+    .msg.rcvd {
+      border-radius: var(--rad-sm) var(--rad) var(--rad) var(--rad-sm);
+      background: #f1f1f1;
+      color: #555;
+      /* moves it to the left */
+      margin-right: auto;
+    }
+
+    /* Improve radius for messages group */
+
+    .msg.sent:first-child,
+    .msg.rcvd + .msg.sent {
+      border-top-right-radius: var(--rad);
+    }
+
+    .msg.rcvd:first-child,
+    .msg.sent + .msg.rcvd {
+      border-top-left-radius: var(--rad);
+    }
+
+    /* time */
+
+    .msg::before {
+      content: attr(data-time);
+      font-size: 0.8rem;
+      position: absolute;
+      bottom: 100%;
+      color: #888;
+      white-space: nowrap;
+      /* Hidden by default */
+      display: none;
+    }
+
+    .msg.sent::before {
+      right: 15px;
+    }
+
+    .msg.rcvd::before {
+      left: 15px;
+    }
+
+    /* Show time only for first message in group */
+
+    .msg:first-child::before,
+    .msg.sent + .msg.rcvd::before,
+    .msg.rcvd + .msg.sent::before {
+      /* Show only for first message in group */
+      display: block;
+    }
+  </style>
+  <ul
+    id="msgs"
+    class="chat"
+    style="list-style-type: none; margin-left: 0px; margin-right: 0px"
+  >
+    {% for msg in msgs %} {% if msg.author == request.user %} {% if msg.read %}
+
+    <li id="{{msg.id}}" data-time="{{message.created_on}}" class="msg sent">
+      {{msg.author}}: {{msg.message}} ☑️
+    </li>
+
+    {% else %}
+    <li id="{{msg.id}}" data-time="{{message.created_on}}" class="msg sent">
+      {{msg.author}}: {{msg.message}} ✅
+    </li>
+
+    {% endif %} {% else %}
+
+    {%if msg.read %}
+    
+    <li id="{{msg.id}}" data-time="{{message.created_on}}" class="msg rcvd">
+      {{msg.author}}: {{msg.message}}
+    </li>
+
+    {% else %}
+
+    <li id="{{msg.id}}" data-time="{{message.created_on}}" class="msg rcvd">
+      {{msg.author}}: {{msg.message}}
+    </li>
+
+    <script>
+      msgRead({{msg.id}},"{{msg.message}}", "{{msg.author}}");
+      
+    </script>
+
+    {% endif %}{% endif %} {% endfor %} {% comment %} {% for msg in msgs %} {% if msg.read
+    == False %% msg.author !== request.user %}
+
+    <li id="{{msg.id}}">{{msg.author}}: {{msg.message}}</li>
+
+    {%else%} {% if msg.read == False %}
+
+    <li id="{{msg.id}}">
+      {{msg.author}}: {{msg.message}} <i class="fa-solid fa-check"></i>
+    </li>
+
+    {% else %}
+
+    <li id="{{msg.id}}">
+      {{msg.author}}: {{msg.message}} <i class="fa-solid fa-check"></i
+      ><i class="fa-solid fa-check"></i>
+    </li>
+    {%endif%} {% endif %} {% endfor %} {% endcomment %}
+  </ul>
+</ul>
+<div class="container">
+  <p style="" id="typ"></p>
+  <form method="post" id="msg-form" style="">
+    {% csrf_token %}
+    <input
+      type="text"
+      name=""
+      value=""
+      id="msg-input"
+      onkeypress="typing()"
+    /><br />
+    <button type="submit" name="button" class="btn btn-success" id="msg-submit">
+      Send
+    </button>
+  </form>
+</div>
+
+<script type="text/javascript">
+  
+  
+    const msgForm = document.getElementById("msg-form");
+    const msgInput = document.getElementById("msg-input");
+    const msgSubmit = document.getElementById("msg-submit");
+    const msgList = document.getElementById("msgs");
+    const msgContainer = document.getElementById("msg-output");
+    const name = "{{user.username}}";
+    const typers = document.getElementById("typ");
+    const pk = window.location.href.split("/")[5];
+    window.socket.emit("join", name);
+
+    const scrollToBottom = (node) => {
+      node.scrollTop = node.scrollHeight;
+    };
+    scrollToBottom(msgContainer);
+
+    window.socket.on("join", function (nameL) {
+      var item = document.createElement("li");
+      item.textContent = `${nameL} is online`;
+      msgList.appendChild(item);
+      scrollToBottom(msgContainer);
+    });
+
+    window.socket.on("typing", function (nameL) {
+      if (name != nameL) {
+        typers.innerText = `${nameL} is typing.....`;
+        setTimeout(() => {
+          typers.innerHTML = "";
+        }, 3000);
+      }
+    });
+
+    window.socket.on("chat-msg", function(msgpk, msg, author, chatpk) { 
+      if (window.location.href.split("/")[5] == chatpk) {
+        var item = document.createElement("li");
+        if (author == "{{request.user.username}}") {
+          item.classList.add("msg", "sent");
+          item.textContent = `${author}: ${msg} ✅`;
+          item.setAttribute("id", `${msgpk}`)
+        } else {
+          item.classList.add("msg", "rcvd");
+          item.textContent = `${author}: ${msg}`;
+          msgRead(msgpk, msg, author);
+          item.setAttribute("id", `${msgpk}`)
+          
+        }
+        msgList.appendChild(item);
+        scrollToBottom(msgContainer);
+      }
+    });
+
+
+    window.socket.on("msg-read", function (msgpk, chatpk, msg, author) {
+      
+      if (window.location.href.split("/")[5] == chatpk) {
+        if (author == "{{request.user.username}}") {
+          var msg = (document.getElementById(
+            `${msgpk}`
+          ).innerHTML = `${author}: ${msg} ☑️`);
+          
+        }
+      }
+    });
+
+    msgForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (msgInput.value) {
+        let msg = msgInput.value
+        $.ajax({
+          type: "POST",
+          url: "http://127.0.0.1:8000/real-time-chats/create/msg",
+          data: {
+            msg: msg,
+            author: name,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            pk: window.location.href.split("/")[5],
+          },
+          success: function (e) {
+            if (e.status == 200) {
+              msgInput.value = "";
+              scrollToBottom(msgContainer);
+              window.socket.emit("chat-msg", e.id, msg, name, window.location.href.split("/")[5],(response) => {
+                if (response.status != "ok") {
+                  alert("Something went wrong");
+                }else{
+                  msgInput.value = "";
+                }
+              });
+            }else {
+              alert("Something went wrong")
+            }}
+          })
+        }
+        })
+      
+
+    function typing() {
+      window.socket.emit("typing", name, (response) => {
+        if (response.status != "ok") {
+          alert("Something went wrong");
+        }
+      });
+    }
+     
+</script>
+{% endblock %}

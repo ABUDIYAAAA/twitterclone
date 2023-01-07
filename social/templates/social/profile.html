@@ -1,0 +1,135 @@
+{% extends "landing/base.html" %}
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+
+<div class="container">
+  <div class="row mt-5">
+    <div class="col md-3 col-sm-6">
+      <a href="{% url 'post_list' %}" class="btn btn-light">Back To Feed</a>
+    </div>
+  </div>
+</div>
+
+
+<div class="row justify-content-center mt-5">
+  <div class="card shadow-sm col-md-8 col-sm-12 corder-bottom px-5 pt-3">
+    <div class="text-center">
+      <img src="{{profile.picture.url}}" alt="" class="rounded-circle" width="100" height="100">
+      <h3 class="py-4" style="font-family: 'Russo One', sans-serif;">
+        {% if profile.name %}
+        <span id="username">{{profile.name}}</span>
+        {% if request.user == user %}
+        <a href="{%url 'profile_edit' profile.pk%}" style="color: #333"> <i class="far fa-edit"></i> </a>
+        {% endif %}
+        {% else %}
+        {{user.username}} <span>
+          {% if request.user == user %}
+          <a href="{%url 'profile_edit' profile.pk%}" style="color: #333"> <i class="far fa-edit"></i> </a>
+          {% endif %}
+          {% endif %}
+        </span>
+      </h3>
+    </div>
+
+    <div class="justify-content-center mt-5">
+      {% if  profile.user != request.user%}
+      <form class="btn-group" role="group" id="chat-create">
+        {% csrf_token %}
+        <button type="submit" name="button" class="btn btn-outline-success">Message</button>
+      </form>
+    </div>
+    <script type="text/javascript">
+      const chatForm = document.getElementById('chat-create')
+      const span = document.getElementById('username');
+      chatForm.addEventListener('submit', function(e) {
+        $.ajax({
+          type: 'POST',
+          url: 'http://127.0.0.1:8000/real-time-chats/chat/create',
+          data: {
+            user1: "{{profile.user.username}}",
+            user2: "{{request.user.username}}",
+            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+          },
+          success: function(e) {
+              url = `http://127.0.0.1:8000/real-time-chats/chat/${e.thread}`
+              window.location.href = url
+               
+          },
+          complete: function(response, textStatus) {
+            console.log("Hey: " + textStatus);
+          }
+        })
+      })
+    </script>
+    {%else%}
+    <a href="{% url 'list_followers' profile.pk%}" type="a" style="text-decoration: none; margin-right:25px;width: 1000px" class="btn btn-outline-info">followers: {{number_of_followers}}</a>
+    {% endif %}
+  </div>
+
+
+</div>
+</div>
+
+<div class="row justify-content-center mt-5">
+  <div class="card shadow-sm col-md-8 col-sm-12 corder-bottom px-5 py-3">
+
+    {% if profile.location %}<p class="" style="font-family: 'Russo One', sans-serif;">Loaction: {{profile.location}}</p> {% endif %}
+    {% if profile.birth_date %}<p class="" style="font-family: 'Russo One', sans-serif;">DOB: {{profile.birth_date}}</p> {% endif %}
+    {% if profile.bio %} <p class="">Bio: {{profile.bio}}</p> {% endif %}
+
+    {% if  profile.user != request.user%}
+    {% if is_following %}
+    <form class="" action="{% url 'remove_follower' profile.pk%}" method="POST">
+      {% csrf_token %}
+      <button class="btn btn-outline-danger" type="submit">Unfollow</button>
+    </form>
+    {% else %}
+    <form class="" action="{% url 'add_follower' profile.pk%}" method="POST">
+      {% csrf_token %}
+      <button class="btn btn-outline-success" type="submit">Follow</button>
+    </form>
+    {% endif %}
+    {% endif %}
+
+
+
+  </div>
+</div>
+
+{% for post in  posts %}
+<div class="container">
+  <div class="row justify-content-center mt-5 position-relative">
+    <div class="col md-5 col-sm-12 border-bottom">
+      <div class="">
+        <a href="{% url 'profile' post.author.profile.pk%}">
+          <img src="{{post.author.profile.picture.url}}" alt="" class="rounded-circle" style="float: left; margin-right: 1rem" height="30" width="30">
+          <p style="padding-top: 0.5 rem;">
+            <a href="{% url 'profile' post.author.profile.pk%}" style="text-decoration: none" class="text-primary"> @{{post.author}} </a> {{post.created_on}}
+          </p>
+        </a>
+      </div>
+      <div class="position-relative">
+        {% if post.image %}
+        <img src="{{post.image.url}}" class="post-image" />
+        {% endif %}
+        <p>{{post.body}}</p>
+        <a href="{%url 'post_detail' post.pk%}" class="stretched-link"></a>
+      </div>
+      <div class="d-flex flex-row">
+        <form class="" action="{% url 'like' post.pk%}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{request.path}}">
+          <button type="submit" style="background-color: transparent; border: none; box-shadow: none;"> <i class="far fa-thumbs-up"></i> <span>{{post.likes.all.count}}</span> </button>
+        </form>
+        <form class="" action="{% url 'dislike' post.pk%}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{request.path}}">
+          <button type="submit" style="background-color: transparent; border: none; box-shadow: none;"> <i class="far fa-thumbs-down"></i> <span>{{post.dislikes.all.count}}</span> </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

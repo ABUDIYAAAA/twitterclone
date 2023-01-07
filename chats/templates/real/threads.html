@@ -1,0 +1,19 @@
+{% extends "landing/base.html" %} {% block content %} {% load chat_tags %}
+<div class="container">
+  <h1 style="">Your chats:</h1>
+</div>
+{% for thread in threads %}
+<div class="container row justify-content-center mt-2 position-relative">
+  <div lcass="container">
+    <div class="card card-body" style="display: flex">
+      <p style="float: left">
+        {% if thread.user1.username == request.user.username %}
+        {{thread.user2.username}} {% else %} {{thread.user1.username}} {%endif%}
+        <br />
+        {{msgs|in_thread:thread}}
+      </p>
+    </div>
+  </div>
+  <a href="{% url 'real-chat-list' thread.pk%}" class="stretched-link"></a>
+</div>
+{% endfor %} {% endblock %}

@@ -1,0 +1,120 @@
+<!-- prettier-ignore -->
+{% extends "landing/base.html" %} {% load crispy_forms_tags %} {% block content %}
+<div class="container">
+  <div class="row justify-content-center mt-3">
+    <div class="col md-5 col-sm-12 border-bottom">
+      <h5>Add a Post!</h5>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row justify-content-center mt-3">
+    <div class="col md-5 col-sm-12 border-bottom">
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %} {{ form|crispy }}
+        <div class="d-grid gap-2">
+          <button class="btn btn-success mt-3 mb-5">Submit!</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% if post_list %} {% for post in post_list%}
+<div class="container">
+  <div class="row justify-content-center mt-3">
+    <div class="col md-5 col-sm-12 border-bottom">
+      <div class="">
+        <a href="{% url 'profile' post.author.profile.pk%}">
+          <img
+            src="{{post.author.profile.picture.url}}"
+            alt=""
+            class="rounded-circle"
+            style="float: left; margin-right: 1rem"
+            height="30"
+            width="30"
+          />
+          <p style="padding-top: 0.5 rem">
+            <a
+              href="{% url 'profile' post.author.profile.pk%}"
+              style="text-decoration: none"
+              class="text-primary"
+            >
+              @{{post.author}}
+            </a>
+            {{post.created_on}}
+          </p>
+        </a>
+      </div>
+      <div class="position-relative">
+        {% if post.image %}
+        <img src="{{post.image.url}}" class="post-image" />
+        {% endif %}
+        <p>{{post.body}}</p>
+        <a href="{%url 'post_detail' post.pk%}" class="stretched-link"></a>
+      </div>
+      <div class="d-flex flex-row">
+        <form class="" action="{% url 'like' post.pk%}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{request.path}}" />
+          <button
+            type="submit"
+            style="
+              background-color: transparent;
+              border: none;
+              box-shadow: none;
+            "
+          >
+            <i class="far fa-thumbs-up"></i>
+            <span>{{post.likes.all.count}}</span>
+          </button>
+        </form>
+        <form class="" action="{% url 'dislike' post.pk%}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{request.path}}" />
+          <button
+            type="submit"
+            style="
+              background-color: transparent;
+              border: none;
+              box-shadow: none;
+            "
+          >
+            <i class="far fa-thumbs-down"></i>
+            <span>{{post.dislikes.all.count}}</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %} {% else %}
+<h4 style="font-family: 'Russo One', sans-serif" class="container">
+  Follow some users to start a feed!
+</h4>
+{% for profile in profiles %} {% if profile.user != request.user %}
+<div class="container">
+  <div class="row justify-content-center mt-3">
+    <div class="col md-5 col-sm-12 border-bottom">
+      <div class="card" style="width: 18rem">
+        <img src="{{profile.picture.url}}" class="card-img-top" alt="..." />
+        <div class="card-body">
+          <h5 class="card-title">
+            {% if profile.name %}{{profile.name}}{% else %}{{profile.user}}{%
+            endif %}
+          </h5>
+          <p class="card-text">
+            {% if profile.bio %}{{profile.bio}}{% endif %}
+          </p>
+          <a
+            href="{% url 'profile' profile.pk%}"
+            class="btn btn-outline-success"
+            >Go profile</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %} {% endif %} {% endfor %} {% endif %} {% endblock %}

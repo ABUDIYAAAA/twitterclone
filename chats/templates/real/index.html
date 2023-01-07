@@ -10,7 +10,7 @@
         } else {
           $.ajax({
             type: "POST",
-            url: "http://127.0.0.1:8000/real-time-chats/msg/read",
+            url: "https://abudiyaaaa.pythonanywhere.com/real-time-chats/msg/read",
             data: {
               msg: msgpk,
               csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
@@ -249,7 +249,7 @@
         let msg = msgInput.value
         $.ajax({
           type: "POST",
-          url: "http://127.0.0.1:8000/real-time-chats/create/msg",
+          url: "https://abudiyaaaa.pythonanywhere.com/real-time-chats/create/msg",
           data: {
             msg: msg,
             author: name,

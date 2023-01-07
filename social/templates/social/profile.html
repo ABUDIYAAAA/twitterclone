@@ -45,14 +45,14 @@
       chatForm.addEventListener('submit', function(e) {
         $.ajax({
           type: 'POST',
-          url: 'http://127.0.0.1:8000/real-time-chats/chat/create',
+          url: 'https://abudiyaaaa.pythonanywhere.com/real-time-chats/chat/create',
           data: {
             user1: "{{profile.user.username}}",
             user2: "{{request.user.username}}",
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
           },
           success: function(e) {
-              url = `http://127.0.0.1:8000/real-time-chats/chat/${e.thread}`
+              url = `https://abudiyaaaa.pythonanywhere.com/real-time-chats/chat/${e.thread}`
               window.location.href = url
                
           },

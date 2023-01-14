@@ -294,6 +294,9 @@
           <input id="login-username" type="text" placeholder="Username" />
           <input id="login-password" type="password" placeholder="Password" />
           <a href="#">Forgot your password?</a>
+          <div id="div_id_remember" class="form-check"> <input type="checkbox" name="remember" class="checkboxinput form-check-input" id="id_remember"> <label for="id_remember" class="form-check-label">
+            Remember Me
+        </label> </div>
           <button>Sign In</button>
         </form>
       </div>
@@ -327,23 +330,51 @@
         container.classList.remove("right-panel-active");
       });
 
-      const loginForm = document.getElementById("login-form");
-      const loginUsername = document.getElementById("login-username");
-      const loginPassword = document.getElementById("login-password");
-      loginForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        if (loginUsername.value && loginPassword.value) {
-          $.ajax({
-            type: "POST",
-            url: "https://abudiyaaaa.pythonanywhere.com/accounts/login/",
-            data: {
-              csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-              login: loginUsername,
-              password: loginPassword,
+      const loginForm = document.getElementById("sigin-form").addEventListener("submit", function(e){
+        e.preventDefault()
+        const loginUsername = document.getElementById("login-username");
+        const loginPassword = document.getElementById("login-password");
+        if (loginUsername.value && loginPassword.value && document.getElementById('id_remember').checked) {
+        $.ajax({
+          type: "POST",
+          url: "{%url 'account_login'%}",
+          data: {
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            login: loginUsername.value,
+            password: loginPassword.value,
+            remember: 'on',
+          },
+          success: function (response) {
+            console.log(response)
+            let redirect_url = response.location;
+            window.location.href = redirect_url;
+          },
+          error: function (response) {
+            alert("Something went wrong please reload the page and try again")
+          }
+        });
+      }else if(loginUsername.value && loginPassword.value){
+        $.ajax({
+          type: "POST",
+          url: "{%url 'account_login'%}",
+          data: {
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            login: loginUsername.value,
+            password: loginPassword.value,
+            remember: 'on',
             },
-          });
-        }
-      });
+          success: function (response) {
+            console.log(response)
+            let redirect_url = response.location;
+            window.location.href = redirect_url;
+          },
+          error: function (response) {
+            alert("Something went wrong please reload the page and try again")
+          }
+        });
+      }
+      })
+       
     </script>
   </body>
 </html>

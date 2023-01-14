@@ -3,7 +3,7 @@ from django.views import View
 
 class Index(View):
     def get(self, request, *args, **kwargs):
-        return render(request, 'landing\maintainance.html')
+        return render(request, 'landing/maintainance.html')
 
 
 def login_social(request):

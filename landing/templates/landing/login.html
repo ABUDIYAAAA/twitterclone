@@ -269,28 +269,28 @@
     {% csrf_token %}
     <div class="container" id="container">
       <div class="form-container sign-up-container">
-        <form action="#">
+        <form action="#" id="signup-form">
           <h1>Create Account</h1>
-          <div class="social-container">
+          <!-- <div class="social-container">
             <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
             <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
-          </div>
-          <span>or use your email for registration</span>
-          <input type="text" placeholder="Username" />
-          <input type="email" placeholder="Email" />
-          <input type="password" placeholder="Password" />
-          <input type="password" placeholder="Password again" />
+          </div> -->
+          <!-- <span>or use your email for registration</span> -->
+          <input type="text" placeholder="Username" id="signup-username" />
+          <!-- <input type="email" placeholder="Email" /> -->
+          <input type="password" placeholder="Password" id="signup-password" />
+          <input type="password" placeholder="Password again"  id-="signup-password2"/>
           <button>Sign Up</button>
         </form>
       </div>
       <div class="form-container sign-in-container">
         <form id="sigin-form">
           <h1>Sign in</h1>
-          <div class="social-container">
+          <!-- <div class="social-container">
             <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
             <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
           </div>
-          <span>or use your account</span>
+          <span>or use your account</span> -->
           <input id="login-username" type="text" placeholder="Username" />
           <input id="login-password" type="password" placeholder="Password" />
           <a href="#">Forgot your password?</a>
@@ -329,7 +329,54 @@
       signInButton.addEventListener("click", () => {
         container.classList.remove("right-panel-active");
       });
+      
+      const signupForm = document.getElementById("signup-form").addEventListener("submit", function(e) {
+        e.preventDefault()
+        const signupusername = document.getElementById("signup-username")
+        const signuppassword1 = document.getElementById("signup-password")
+        const signuppassword2 = document.getElementBId("signup-password2")
+        if (passwordValidator === true){
+          console.log("Ajax")
+        }else{
+          console.log(r[1])
+        }
+      })
 
+      
+      function paswwordValidator(a, b) {
+        if (a === b){
+          if (len(a) >= 8){
+            var matches = a.match(/\d+/g);
+            if (matches != null) {
+              if (similarity(a, signupusername) <= 0.5){
+                if (specialChars(a)){
+                  if (stringHasTheWhiteSpaceOrNot(a) == false){
+                    return true
+                  }else{
+                    r = [false, "password cannot contain whitespaces"]
+                    return r
+                  }
+                }else {
+                  r = [false, "password must contain a special character like $, @, etc."]
+                  return r
+                }
+              }else {
+                r = [false, "password is too similar to username"]
+                return r
+              }
+            }else {
+              r = [false, "password must contain a digit"]
+              return r
+            }
+          }else {
+            r = [false, "password must be longer than 8 chars"]
+            return r
+          }
+        }else{
+          r = [false, "make sure both passswords match"]
+          return r
+        }
+      }
       const loginForm = document.getElementById("sigin-form").addEventListener("submit", function(e){
         e.preventDefault()
         const loginUsername = document.getElementById("login-username");
@@ -374,7 +421,56 @@
         });
       }
       })
+
+      function editDistance(s1, s2) {
+        s1 = s1.toLowerCase();
+        s2 = s2.toLowerCase();
+
+        var costs = new Array();
+        for (var i = 0; i <= s1.length; i++) {
+          var lastValue = i;
+          for (var j = 0; j <= s2.length; j++) {
+            if (i == 0)
+             costs[j] = j;
+            else {
+             if (j > 0) {
+               var newValue = costs[j - 1];
+              if (s1.charAt(i - 1) != s2.charAt(j - 1))
+               newValue = Math.min(Math.min(newValue, lastValue),
+                costs[j]) + 1;
+                costs[j - 1] = lastValue;
+                lastValue = newValue;
+              }
+          }
+        }
+        if (i > 0)
+         costs[s2.length] = lastValue;
+         }
+        return costs[s2.length];
+    }
        
+      function similarity(s1, s2) {
+        var longer = s1;
+        var shorter = s2;
+        if (s1.length < s2.length) {
+         longer = s2;
+        shorter = s1;
+          }
+        var longerLength = longer.length;
+        if (longerLength == 0) {
+          return 1.0;
+          }
+        return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
+      }
+
+      function containsSpecialChars(str) {
+         const specialChars = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+        return specialChars.test(str);
+       }
+
+       function stringHasTheWhiteSpaceOrNot(value){
+         return value.indexOf(' ') >= 0;
+        }
     </script>
   </body>
 </html>

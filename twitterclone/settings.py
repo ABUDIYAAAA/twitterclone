@@ -152,7 +152,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 LOGIN_REDIRECT_URL = 'post_list'
-
+LOGIN_URL = 'index'
 
 
 # Default primary key field type

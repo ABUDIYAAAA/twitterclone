@@ -83,7 +83,7 @@
       form {
         background-color: #ffffff;
         display: flex;
-        align-items: center;
+        align-items: none;
         justify-content: center;
         flex-direction: column;
         padding: 0 50px;
@@ -91,7 +91,7 @@
         text-align: center;
       }
 
-      input {
+      .form-input {
         background-color: #eee;
         border: none;
         padding: 12px 15px;
@@ -276,10 +276,11 @@
             <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
           </div> -->
           <!-- <span>or use your email for registration</span> -->
-          <input type="text" placeholder="Username" id="signup-username" />
+          <input type="text" placeholder="Username" id="signup-username" class="form-input"/>
           <!-- <input type="email" placeholder="Email" /> -->
-          <input type="password" placeholder="Password" id="signup-password" />
-          <input type="password" placeholder="Password again"  id-="signup-password2"/>
+          <input type="password" placeholder="Password" id="signup-password" class="form-input" />
+          <input type="password" placeholder="Password again"  id="signup-password2" class="form-input" />
+          <p class="" id="errorSignUp"></p>
           <button>Sign Up</button>
         </form>
       </div>
@@ -291,12 +292,10 @@
             <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
           </div>
           <span>or use your account</span> -->
-          <input id="login-username" type="text" placeholder="Username" />
-          <input id="login-password" type="password" placeholder="Password" />
+          <input id="login-username" type="text" placeholder="Username" class="form-input"/>
+          <input id="login-password" type="password" placeholder="Password" class="form-input" />
           <a href="#">Forgot your password?</a>
-          <div id="div_id_remember" class="form-check"> <input type="checkbox" name="remember" class="checkboxinput form-check-input" id="id_remember"> <label for="id_remember" class="form-check-label">
-            Remember Me
-        </label> </div>
+          <p class="" id="errorSignIn"></p>
           <button>Sign In</button>
         </form>
       </div>
@@ -332,24 +331,56 @@
       
       const signupForm = document.getElementById("signup-form").addEventListener("submit", function(e) {
         e.preventDefault()
-        const signupusername = document.getElementById("signup-username")
-        const signuppassword1 = document.getElementById("signup-password")
-        const signuppassword2 = document.getElementBId("signup-password2")
-        if (passwordValidator === true){
-          console.log("Ajax")
+        const signupusername = document.getElementById("signup-username").value
+        const signuppassword1 = document.getElementById("signup-password").value
+        const signuppassword2 = document.getElementById("signup-password2").value
+       if (signuppassword1 && signuppassword2){
+          if (passwordValidator(signuppassword1, signuppassword2) === true){
+            $.ajax({
+          type: "POST",
+          url: "{%url 'account_signup'%}",
+          data: {
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            username: signupusername,
+            password1: signuppassword1,
+            password2: signuppassword2,
+            email: " ",
+          },
+          success: function (response) {
+            console.log(response)
+            let redirect_url = response.location;
+            window.location.href = redirect_url;
+          },
+          error: function (response) {
+            document.getElementById("errorSignUp").innerText = errorCathcer(response)
+          }
+        });
         }else{
-          console.log(r[1])
-        }
+          document.getElementById("errorSignUp").innerText = r[1]
+        }}
       })
+        
+        
+      function errorCathcer(a){
+          if (a.responseJSON.form.fields.username.errors[0]){
+          return a.responseJSON.form.fields.username.errors[0]
+          }else if (a.responseJSON.form.fields.password1.errors[0]){
+            return a.responseJSON.form.fields.password1.errors[0]
+          }else if (a.responseJSON.form.fields.password2.errors[0]){
+            return a.responseJSON.form.fields.password2.errors[0]
+          }else if(a.responseJSON.form.fields.email.errors[0]){
+            return a.responseJSON.form.fields.email.errors[0]
+          }
+      }
 
-      
-      function paswwordValidator(a, b) {
+
+      function passwordValidator(a, b) {
         if (a === b){
-          if (len(a) >= 8){
+          if (a.length >= 8){
             var matches = a.match(/\d+/g);
             if (matches != null) {
-              if (similarity(a, signupusername) <= 0.5){
-                if (specialChars(a)){
+              if (similarity(a, document.getElementById("signup-username").value) <= 0.5){
+                if (containsSpecialChars(a)){
                   if (stringHasTheWhiteSpaceOrNot(a) == false){
                     return true
                   }else{
@@ -381,7 +412,7 @@
         e.preventDefault()
         const loginUsername = document.getElementById("login-username");
         const loginPassword = document.getElementById("login-password");
-        if (loginUsername.value && loginPassword.value && document.getElementById('id_remember').checked) {
+        if (loginUsername.value && loginPassword.value) {
         $.ajax({
           type: "POST",
           url: "{%url 'account_login'%}",
@@ -397,30 +428,11 @@
             window.location.href = redirect_url;
           },
           error: function (response) {
-            alert("Something went wrong please reload the page and try again")
+            document.getElementById("errorSignIn").innerText = response.responseJSON.form.errors[0]
+            console.log(response.responseJSON.form.errors[0])
           }
         });
-      }else if(loginUsername.value && loginPassword.value){
-        $.ajax({
-          type: "POST",
-          url: "{%url 'account_login'%}",
-          data: {
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-            login: loginUsername.value,
-            password: loginPassword.value,
-            remember: 'on',
-            },
-          success: function (response) {
-            console.log(response)
-            let redirect_url = response.location;
-            window.location.href = redirect_url;
-          },
-          error: function (response) {
-            alert("Something went wrong please reload the page and try again")
-          }
-        });
-      }
-      })
+      }})
 
       function editDistance(s1, s2) {
         s1 = s1.toLowerCase();

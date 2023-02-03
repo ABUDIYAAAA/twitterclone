@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.views import View
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
-
+from social.models import UserProfile
 # Create your views here.
 
 
@@ -23,7 +23,10 @@ def ThreadView(request, pk):
     thread = Threads.objects.get(pk=pk)
     if thread.user1.username == user.username or thread.user2.username == user.username:
         messsages = Messages.objects.filter(thread=thread)
-        return render(request, "real/index.html", {"msgs": messsages})
+        if thread.user1 == user:
+            return render(request, "real/index.html", {"msgs": messsages, "status": UserProfile.objects.get(user=thread.user2).online})
+        else:
+            return render(request, "real/index.html", {"msgs": messsages, "status": UserProfile.objects.get(user=thread.user1).online})
     else:
         raise PermissionDenied()
 
@@ -78,7 +81,8 @@ def deleteChat(request):
     pass
 
 def readMsg(request):
-    msg = Messages.objects.get(id=request.POST['msg'])
+    msg = Messages.objects.get(id=request.POST.get('msg'))
     msg.read = True
     msg.save()
     return JsonResponse({'status': 200})
+

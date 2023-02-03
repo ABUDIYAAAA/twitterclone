@@ -1,7 +1,7 @@
 {% extends "landing/base.html" %} {% load static %} {% block content %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <ul class="container" id="msg-output" style="overflow: scroll; height: 400px">
-<script type="text/javascript" src="{% static "js/chatRead.js" %}?version=1"></script>
+<script type="text/javascript" src="{% static "js/chatRead.js" %}?version=2"></script>
 <link href="{% static "css/chatStyles.css" %}" rel="stylesheet" type="text/css">
   <ul
     id="msgs"
@@ -56,8 +56,10 @@
       ><i class="fa-solid fa-check"></i>
     </li>
     {%endif%} {% endif %} {% endfor %} {% endcomment %}
+    <li class="msg rcvd">
+      {{status}}
+    </li>
   </ul>
-</ul>
 <div class="container">
   <p style="" id="typ"></p>
   <form method="post" id="msg-form" style="">
@@ -69,10 +71,10 @@
       id="msg-input"
       onkeypress="typing()"
     /><br />
-    <button type="submit" name="button" class="btn btn-success" id="msg-submit">
+    <button type="submit" name="button" class="btn btn-success" id="msg-submit" onload="online()" >
       Send
     </button>
   </form>
 </div>
-<script type="text/javascript" src="{% static "js/chat.js" %}?version=1"></script>
+<script type="text/javascript" src="{% static "js/chat.js" %}?version=12"></script>
 {% endblock %}

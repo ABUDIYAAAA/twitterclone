@@ -12,3 +12,5 @@ class Messages(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author")
     thread = models.ForeignKey('Threads', on_delete=models.CASCADE)
     read = models.BooleanField(default=False)
+
+

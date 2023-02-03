@@ -6,7 +6,7 @@ function msgRead(msgpk, msg, author) {
         } else {
           $.ajax({
             type: "POST",
-            url: "https://abudiyaaaa.pythonanywhere.com/real-time-chats/msg/read",
+            url: "/real-time-chats/msg/read",
             data: {
               msg: msgpk,
               csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),

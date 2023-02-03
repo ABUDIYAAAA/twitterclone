@@ -168,8 +168,8 @@
   <body>
     {% csrf_token %}
     <script>
-      var socket = io("https://marred-stormy-archduke.glitch.me/");
-      
+      var socket = io("https://marred-stormy-archduke.glitch.me/", {query: "name={{user.username}}"});
+      var name = "{{user.username}}";
     </script>
     {% include "landing/navbar.html" %} {% block content %}
     <div class="d-flex justify-content-center">
@@ -184,17 +184,6 @@
       crossorigin="anonymous"
     ></script>
     <script type="text/javascript" src="{% static "js/social.js" %}?version=15"></script>
-    <script>
-      function ping() {
-        window.socket.emit("ping", "{{request.user}}", (response) => {
-          if (response.status != "ok") {
-            alert("Something went wrong");
-          }
-        });
-      }
-
-      setInterval(ping, 3000)
-    
-    </script>
+    <script type="text/javascript" src="{% static "js/online.js" %}?version=10"></script>
   </body>
 </html>

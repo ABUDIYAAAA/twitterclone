@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils import timezone
+from django.utils import timezone, timesince
 from django.contrib.auth.models import User
 # Create your models here.
 class Threads(models.Model):
@@ -12,5 +12,10 @@ class Messages(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author")
     thread = models.ForeignKey('Threads', on_delete=models.CASCADE)
     read = models.BooleanField(default=False)
+
+    @property
+    def timesince(self):
+        return timesince.timesince(self.created_on)
+    
 
 

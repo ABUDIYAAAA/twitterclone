@@ -6,6 +6,8 @@ from django.views import View
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from social.models import UserProfile
+from django.core import serializers
+
 # Create your views here.
 
 
@@ -15,20 +17,29 @@ def ThreadList(request):
     criterion2 = Q(user2=user)
     threads = Threads.objects.filter(criterion1 | criterion2)
     msgs = Messages.objects.all()
-    return render(request, "real/threads.html", {"threads": threads, "msgs": msgs})
+    return render(request, "real/newChatUi.html", {"threads": threads, "msgs": msgs})
 
 
-def ThreadView(request, pk):
-    user = User.objects.get(username=request.user.username)
-    thread = Threads.objects.get(pk=pk)
-    if thread.user1.username == user.username or thread.user2.username == user.username:
-        messsages = Messages.objects.filter(thread=thread)
-        if thread.user1 == user:
-            return render(request, "real/index.html", {"msgs": messsages, "status": UserProfile.objects.get(user=thread.user2).online})
-        else:
-            return render(request, "real/index.html", {"msgs": messsages, "status": UserProfile.objects.get(user=thread.user1).online})
-    else:
-        raise PermissionDenied()
+def ThreadView(request):
+    if request.is_ajax and request.method == "GET":
+        pk =  request.GET.get("pk")
+        thread = Threads.objects.get(pk=pk)
+        msgs = Messages.objects.filter(thread=thread)
+        msgs_json = []
+        for msg in msgs:
+            msgs_json.append([msg.author.username, msg.message,  msg.timesince, msg.read, f"{msg.author.profile.picture.url}"])
+        return JsonResponse({'status': 200, 'msgs': msgs_json})
+
+    # user = User.objects.get(username=request.user.username)
+    # thread = Threads.objects.get(pk=pk)
+    # if thread.user1.username == user.username or thread.user2.username == user.username:
+    #     messsages = Messages.objects.filter(thread=thread)
+    #     if thread.user1 == user:
+    #         return render(request, "real/index.html", {"msgs": messsages, "status": UserProfile.objects.get(user=thread.user2).online})
+    #     else:
+    #         return render(request, "real/index.html", {"msgs": messsages, "status": UserProfile.objects.get(user=thread.user1).online})
+    # else:
+    #     raise PermissionDenied()
 
 
 

@@ -111,9 +111,9 @@
         <img class="chat-area-profile" src="" alt="">
        </div>
       </div>
-      <ul class="chat-area-main">
+      <div class="chat-area-main">
        
-      </ul>
+      </div>
       <div class="chat-area-footer">
        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-video">
         <path d="M23 7l-7 5 7 5V7z" />
@@ -222,10 +222,11 @@ if (currentPk){
                 </div>
                 `
                 }
-                scrollToBottom(document.getElementsByClassName("chat-area"))
+                
               }
                 
-              
+             scrollToBottom(document.getElementsByClassName("chat-area"))
+             scrollToBottom(document.getElementsByClassName("chat-area-main")) 
              
       }
             }

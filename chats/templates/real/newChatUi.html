@@ -10,9 +10,10 @@
     <script type="text/javascript" src="{% static "js/chatRead.js" %}?version=2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/timeago.js/2.0.2/timeago.min.js" integrity="sha512-sl01o/gVwybF1FNzqO4NDRDNPJDupfN0o2+tMm4K2/nr35FjGlxlvXZ6kK6faa9zhXbnfLIXioHnExuwJdlTMA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
   </head>
 <body>
-{% csrf_token %}
+
 
 <div class="app">
     <div class="header">
@@ -38,7 +39,7 @@
         <circle cx="12" cy="12" r="3" />
         <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" /></svg>
       </div>
-      <img class="user-profile" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3364143/download+%281%29.png" alt="" class="account-profile" alt="">
+      <a href="{%url 'profile' request.user.profile.pk%}"><img class="user-profile" src="{{request.user.profile.picture.url}}" alt="" class="account-profile" alt=""></a>
      </div>
     </div>
     <div class="wrapper">
@@ -46,7 +47,7 @@
         {% for thread in threads %}
         {% if thread.user1.username == request.user.username %}
             {% if thread.user2.profile.online == True %}
-            <div class="msg online" onclick="openThread({{thread.pk}}, '{{thread.user2.username}}')" id="{{thread.pk}}">
+            <div class="msg online" onclick="openThread({{thread.pk}}, '{{thread.user2.username}}')" id="{{thread.pk}}" name="{{thread.user2.username}}">
                 <img class="msg-profile" src="{{thread.user2.profile.picture.url}}" alt="" />
                     <div class="msg-detail">
                         <div class="msg-username">{{thread.user2.username}}</div>
@@ -58,7 +59,7 @@
                             </div>
                         </div>
         {% else %}
-        <div class="msg" onclick="openThread({{thread.pk}}, '{{thread.user2.username}}')" id="{{thread.pk}}">
+        <div class="msg" onclick="openThread({{thread.pk}}, '{{thread.user2.username}}')" id="{{thread.pk}}" name="{{thread.user2.username}}">
             <img class="msg-profile" src="{{thread.user2.profile.picture.url}}" alt="" />
        <div class="msg-detail">
         <div class="msg-username">{{thread.user2.username}}</div>
@@ -72,7 +73,7 @@
       {% endif %}
       {% else %}
       {% if thread.user1.profile.online == True %}
-            <div class="msg online" onclick="openThread({{thread.pk}}, '{{thread.user1.username}}')" id="{{thread.pk}}">
+            <div class="msg online" onclick="openThread({{thread.pk}}, '{{thread.user1.username}}')" id="{{thread.pk}}" name="{{thread.user1.username}}">
                 <img class="msg-profile" src="{{thread.user1.profile.picture.url}}" alt="" />
                     <div class="msg-detail">
                         <div class="msg-username">{{thread.user1.username}}</div>
@@ -84,7 +85,7 @@
                             </div>
                         </div>
         {% else %}
-        <div class="msg" onclick="openThread({{thread.pk}}, '{{thread.user1.username}}')" id="{{thread.pk}}">
+        <div class="msg" onclick="openThread({{thread.pk}}, '{{thread.user1.username}}')" id="{{thread.pk}}" name="{{thread.user1.username}}">
             <img class="msg-profile" src="{{thread.user1.profile.picture.url}}" alt="" />
        <div class="msg-detail">
         <div class="msg-username">{{thread.user1.username}}</div>
@@ -107,12 +108,10 @@
       <div class="chat-area-header">
        <div class="chat-area-title"></div>
        <div class="chat-area-group">
-        <img class="chat-area-profile" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3364143/download+%283%29+%281%29.png" alt="" />
-        <img class="chat-area-profile" src="" alt="">
+        <img class="chat-area-profile" src="" alt="" id="profile-image">
        </div>
       </div>
-      <div class="chat-area-main">
-       
+      <div class="chat-area-main" id="scrollable-div" style="overflow-y: scroll;"> 
       </div>
       <div class="chat-area-footer">
        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-video">
@@ -127,7 +126,7 @@
         <path d="M12 8v8M8 12h8" /></svg>
        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-paperclip">
         <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>
-        <form method="post" id="msg-form"><input type="text" placeholder="Type something here..." onkeypress="typing()" id="msg-input"/></form>
+        <form method="post" id="msg-form" style="width: 100%"> {% csrf_token %} <input type="text" placeholder="Type something here..." id="msg-input"/></form>
        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-smile">
         <circle cx="12" cy="12" r="10" />
         <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" /></svg>
@@ -138,134 +137,22 @@
      
     </div>
    </div>
-   <!-- <script type="text/javascript" src="{% static "js/chat.js" %}?version=12"></script> -->
-   <script>
+  
+   
+<script>
+  var socket = io("https://marred-stormy-archduke.glitch.me/", {query: "name={{user.username}}"});
+  var name = "{{user.username}}";
+  var request_user_url = "{{request.user.profile.picture.url}}"
+  const urlParams = new URLSearchParams(window.location.search);
 
-const urlParams = new URLSearchParams(window.location.search);
 
-const scrollToBottom = (node) => {
-      node.scrollTop = node.scrollHeight;
-    };
     
-let currentPk = urlParams.get('pk')
-if (currentPk){
-    var chatLeftDiv = document.getElementById(`${currentPk}`)
-    chatLeftDiv.classList.add("active")
-    chatLeftDiv.setAttribute("id", `${currentPk}`)
-    var div = document.getElementById(`${currentPk}`).children;
-    var chatAreaTitle = document.getElementsByClassName("chat-area-title")
-    chatAreaTitle[0].innerHTML =  `${div[1].firstElementChild.innerHTML}`
-    
-    $.ajax({
-            type: 'GET',
-            url: "{% url 'real-chat-list' %}",
-            data: {
-              pk : currentPk,
-              username: '{{request.user.username}}',
-            },
-            success: function (response) {
-              for (let index = 0; index < response.msgs.length; index++) {
-                var author = response.msgs[index][0]
-                var msg = response.msgs[index][1]
-                var created_on = response.msgs[index][2]
-                var read = response.msgs[index][3]
-                var img_url = response.msgs[index][4]
-              if (read) {
-                if (author == "{{request.user.username}}"){
-                  document.getElementsByClassName("chat-area-main")[0].innerHTML +=`
-                  <div class="chat-msg owner">
-                    <div class="chat-msg-profile">
-                      <img class="chat-msg-img" src="{{request.user.profile.picture.url}}" alt="" />
-                      <div class="chat-msg-date">Message seen ${created_on}</div>
-                    </div>
-                    <div class="chat-msg-content">
-                      <div class="chat-msg-text">${msg}</div>
-                    </div>
-                </div>
-                `
-                }else{
-                  document.getElementsByClassName("chat-area-main")[0].innerHTML += `
-                  <div class="chat-msg">
-                    <div class="chat-msg-profile">
-                      <img class="chat-msg-img" src="${img_url}" alt="" />
-                      <div class="chat-msg-date">Message seen ${created_on}</div>
-                    </div>
-                    <div class="chat-msg-content">
-                      <div class="chat-msg-text">${msg}</div>
-                    </div>
-                </div>
-                `
-                }
-              }else{
-                if (author == "{{request.user.username}}"){
-                  document.getElementsByClassName("chat-area-main")[0].innerHTML += `
-                  <div class="chat-msg owner">
-                    <div class="chat-msg-profile">
-                      <img class="chat-msg-img" src="{{request.user.profile.picture.url}}" alt="" />
-                      <div class="chat-msg-date"> ${created_on}</div>
-                    </div>
-                    <div class="chat-msg-content">
-                      <div class="chat-msg-text">${msg}</div>
-                    </div>
-                </div>
-                `
-                }else{
-                  document.getElementsByClassName("chat-area-main")[0].innerHTML += `
-                  <div class="chat-msg">
-                    <div class="chat-msg-profile">
-                      <img class="chat-msg-img" src="${img_url}" alt="" />
-                      <div class="chat-msg-date"> ${created_on}</div>
-                    </div>
-                    <div class="chat-msg-content">
-                      <div class="chat-msg-text">${msg}</div>
-                    </div>
-                </div>
-                `
-                }
-                
-              }
-                
-             scrollToBottom(document.getElementsByClassName("chat-area"))
-             scrollToBottom(document.getElementsByClassName("chat-area-main")) 
-             
-      }
-            }
-          }
-    )    
-  }
-function openThread(pk, username){
-  window.location.href = window.location.protocol + "//" + window.location.host + window.location.pathname + `?pk=${pk}`
-  $.ajax({
-            type: 'GET',
-            url: "{% url 'real-chat-list' %}",
-            data: {
-              pk : pk,
-              username: '{{request.user.username}}',
-            },
-            success: function (response) {
-              if (response.status == 200){
-                var chatLeftDiv = document.getElementById(`${pk}`)
-                chatLeftDiv.classList.add("active")
-                if (currentPk){
-                var chatLeftDiv2 = document.getElementById(`${currentPk}`)
-                chatLeftDiv2.classList.remove("active")
-                currentPk = pk
-                
-                }else{
-                  currentPk = pk
-                }
-              }
-            },
-            error: function (response) {
-                alert("something went wrong", response)
-                console.log(response)
-            }
-        })
-    }
+  var currentPk = urlParams.get('pk')
 
-
-
-    console.log("Done")
    </script>
+   <script type="text/javascript" src="{% static "js/chat.js" %}?version=25"></script>
+   <script type="text/javascript" src="{% static "js/online.js" %}?version=15"></script>
+   <script type="text/javascript" src="{% static "js/chatUi.js" %}?version=51"></script>
+   <script>scrollToBottom()</script>
 </body>
 </html>

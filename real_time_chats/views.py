@@ -24,13 +24,20 @@ def ThreadView(request):
     if request.is_ajax and request.method == "GET":
         pk =  request.GET.get("pk")
         thread = Threads.objects.get(pk=pk)
+        user = User.objects.get(username=request.GET.get("username"))
+    
         msgs = Messages.objects.filter(thread=thread)
         msgs_json = []
         for msg in msgs:
-            msgs_json.append([msg.author.username, msg.message,  msg.timesince, msg.read, f"{msg.author.profile.picture.url}"])
-        return JsonResponse({'status': 200, 'msgs': msgs_json})
+            msgs_json.append([msg.author.username, msg.message,  msg.timesince, msg.read, f"{msg.author.profile.picture.url}", msg.pk])
 
-    # user = User.objects.get(username=request.user.username)
+        if thread.user1.username == user.username or thread.user2.username == user.username:
+            return JsonResponse({'status': 200, 'msgs': msgs_json})
+        else:
+            return JsonResponse({'status': 403})
+
+    # user = User.objects.get(userna
+    # me=request.user.username)
     # thread = Threads.objects.get(pk=pk)
     # if thread.user1.username == user.username or thread.user2.username == user.username:
     #     messsages = Messages.objects.filter(thread=thread)
@@ -54,7 +61,7 @@ def createMessage(request):
 
         
 
-        return JsonResponse({'status': 200, 'id': msg.id})
+        return JsonResponse({'status': 200, 'id': msg.id, 'timesince': msg.timesince})
     
 
 def deleteMessage(request):

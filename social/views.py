@@ -9,6 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.db.models import Q
 from chats.models import Chats
 from django.contrib.auth.models import User
+from plausible_proxy import send_custom_event
 
 # Create your views here.
 
@@ -18,21 +19,18 @@ class PostListView(LoginRequiredMixin, View):
         logged_in_user = request.user
         posts = Post.objects.filter(
             author__profile__followers__in=[logged_in_user.id]
-        ).order_by('-created_on')
+        ).order_by("-created_on")
         form = PostForm()
-        profile = UserProfile.objects.all().order_by('-followers')
-        context = {'post_list': posts,
-                   'form': form,
-                   'profiles': profile
-
-                   }
-        return render(request, 'social/post_list.html', context)
+        profile = UserProfile.objects.all().order_by("-followers")
+        context = {"post_list": posts, "form": form, "profiles": profile}
+        return render(request, "social/post_list.html", context)
 
     def post(self, request, *args, **kwargs):
+        send_custom_event(request, name="Form Submit")
         logged_in_user = request.user
         posts = Post.objects.filter(
             author__profile__followers__in=[logged_in_user.id]
-        ).order_by('-created_on')
+        ).order_by("-created_on")
         form = PostForm(request.POST, request.FILES)
 
         if form.is_valid():
@@ -41,11 +39,8 @@ class PostListView(LoginRequiredMixin, View):
             new_post.save()
 
         form = PostForm()
-        context = {'post_list': posts,
-                   'form': form
-
-                   }
-        return render(request, 'social/post_list.html', context)
+        context = {"post_list": posts, "form": form}
+        return render(request, "social/post_list.html", context)
 
 
 class PostDetialView(LoginRequiredMixin, View):
@@ -54,11 +49,11 @@ class PostDetialView(LoginRequiredMixin, View):
 
         form = CommentForm()
 
-        comments = Comment.objects.filter(post=post).order_by('-created_on')
+        comments = Comment.objects.filter(post=post).order_by("-created_on")
 
-        context = {'post': post, 'form': form, 'comments': comments}
+        context = {"post": post, "form": form, "comments": comments}
 
-        return render(request, 'social/post_detail.html', context)
+        return render(request, "social/post_detail.html", context)
 
     def post(self, request, pk, *args, **kwargs):
         post = Post.objects.get(pk=pk)
@@ -70,23 +65,27 @@ class PostDetialView(LoginRequiredMixin, View):
             new_comment.post = post
             new_comment.save()
             notification = Notification.objects.create(
-                notification_type=2, from_user=request.user, to_user=post.author, post=post)
+                notification_type=2,
+                from_user=request.user,
+                to_user=post.author,
+                post=post,
+            )
 
-        comments = Comment.objects.filter(post=post).order_by('-created_on')
+        comments = Comment.objects.filter(post=post).order_by("-created_on")
 
-        context = {'post': post, 'form': form, 'comments': comments}
+        context = {"post": post, "form": form, "comments": comments}
 
-        return render(request, 'social/post_detail.html', context)
+        return render(request, "social/post_detail.html", context)
 
 
 class PostEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
-    fields = ['body']
-    template_name = 'social/post_edit.html'
+    fields = ["body"]
+    template_name = "social/post_edit.html"
 
     def get_success_url(self):
-        pk = self.kwargs['pk']
-        return reverse_lazy('post_detail', kwargs={'pk': pk})
+        pk = self.kwargs["pk"]
+        return reverse_lazy("post_detail", kwargs={"pk": pk})
 
     def test_func(self):
         post = self.get_object()
@@ -95,8 +94,8 @@ class PostEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
-    template_name = 'social/post_delete.html'
-    success_url = reverse_lazy('post_list')
+    template_name = "social/post_delete.html"
+    success_url = reverse_lazy("post_list")
 
     def test_func(self):
         post = self.get_object()
@@ -115,21 +114,25 @@ class CommentReplyView(LoginRequiredMixin, View):
             new_comment.parent = parent_comment
             new_comment.save()
             notification = Notification.objects.create(
-                notification_type=2, from_user=request.user, to_user=parent_comment.author, comment=new_comment)
+                notification_type=2,
+                from_user=request.user,
+                to_user=parent_comment.author,
+                comment=new_comment,
+            )
 
         else:
-            return render('post_list')
+            return render("post_list")
 
-        return redirect('post_detail', pk=post_pk)
+        return redirect("post_detail", pk=post_pk)
 
 
 class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Comment
-    template_name = 'social/comment_delete.html'
+    template_name = "social/comment_delete.html"
 
     def get_success_url(self):
-        pk = self.kwargs['post_pk']
-        return reverse_lazy('post_detail', kwargs={'pk': pk})
+        pk = self.kwargs["post_pk"]
+        return reverse_lazy("post_detail", kwargs={"pk": pk})
 
     def test_func(self):
         post = self.get_object()
@@ -140,7 +143,7 @@ class ProfileView(View):
     def get(self, request, pk, *args, **kwargs):
         profile = UserProfile.objects.get(pk=pk)
         user = profile.user
-        posts = Post.objects.filter(author=user).order_by('-created_on')
+        posts = Post.objects.filter(author=user).order_by("-created_on")
         followers = profile.followers.all()
         number_of_followers = len(followers)
 
@@ -157,25 +160,25 @@ class ProfileView(View):
                 is_following = False
 
         context = {
-            'user': user,
-            'profile': profile,
-            'posts': posts,
-            'number_of_followers': number_of_followers,
-            'is_following': is_following,
-            'chats': chats
+            "user": user,
+            "profile": profile,
+            "posts": posts,
+            "number_of_followers": number_of_followers,
+            "is_following": is_following,
+            "chats": chats,
         }
 
-        return render(request, 'social/profile.html', context)
+        return render(request, "social/profile.html", context)
 
 
 class ProfileEditView(UpdateView, LoginRequiredMixin, UserPassesTestMixin):
     model = UserProfile
-    fields = ['name', 'bio', 'birth_date', 'location', 'picture']
-    template_name = 'social/profile_edit.html'
+    fields = ["name", "bio", "birth_date", "location", "picture"]
+    template_name = "social/profile_edit.html"
 
     def get_success_url(self):
-        pk = self.kwargs['pk']
-        return reverse_lazy('profile', kwargs={'pk': pk})
+        pk = self.kwargs["pk"]
+        return reverse_lazy("profile", kwargs={"pk": pk})
 
     def test_func(self):
         profile = self.get_object()
@@ -187,15 +190,16 @@ class AddFollower(LoginRequiredMixin, View):
         profile = UserProfile.objects.get(pk=pk)
         profile.followers.add(request.user)
         notification = Notification.objects.create(
-            notification_type=3, from_user=request.user, to_user=profile.user)
-        return redirect('profile', pk=profile.pk)
+            notification_type=3, from_user=request.user, to_user=profile.user
+        )
+        return redirect("profile", pk=profile.pk)
 
 
 class RemoveFollower(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         profile = UserProfile.objects.get(pk=pk)
         profile.followers.remove(request.user)
-        return redirect('profile', pk=profile.pk)
+        return redirect("profile", pk=profile.pk)
 
 
 class AddLike(LoginRequiredMixin, View):
@@ -222,11 +226,15 @@ class AddLike(LoginRequiredMixin, View):
         if not is_like:
             post.likes.add(request.user)
             notification = Notification.objects.create(
-                notification_type=1, from_user=request.user, to_user=post.author, post=post)
+                notification_type=1,
+                from_user=request.user,
+                to_user=post.author,
+                post=post,
+            )
         else:
             post.likes.remove(request.user)
 
-        next = request.POST.get('next', '/')
+        next = request.POST.get("next", "/")
         return HttpResponseRedirect(next)
 
 
@@ -257,19 +265,17 @@ class RemoveLike(LoginRequiredMixin, View):
         else:
             post.dislikes.add(request.user)
 
-        next = request.POST.get('next', '/')
+        next = request.POST.get("next", "/")
         return HttpResponseRedirect(next)
 
 
 class UserSearch(View):
     def get(self, request, *args, **kwargs):
-        query = self.request.GET.get('query')
-        profile_list = UserProfile.objects.filter(
-            Q(user__username__icontains=query)
-        )
-        context = {'profile_list': profile_list}
+        query = self.request.GET.get("query")
+        profile_list = UserProfile.objects.filter(Q(user__username__icontains=query))
+        context = {"profile_list": profile_list}
 
-        return render(request, 'social/search.html', context)
+        return render(request, "social/search.html", context)
 
 
 class ListFollowers(View):
@@ -277,11 +283,9 @@ class ListFollowers(View):
         profile = UserProfile.objects.get(pk=pk)
         followers = profile.followers.all()
 
-        context = {
-            'profile': profile,
-            'followers': followers}
+        context = {"profile": profile, "followers": followers}
 
-        return render(request, 'social/followers_list.html', context)
+        return render(request, "social/followers_list.html", context)
 
 
 class AddCommentLike(LoginRequiredMixin, View):
@@ -308,11 +312,15 @@ class AddCommentLike(LoginRequiredMixin, View):
         if not is_like:
             comment.likes.add(request.user)
             notification = Notification.objects.create(
-                notification_type=1, from_user=request.user, to_user=comment.author, comment=comment)
+                notification_type=1,
+                from_user=request.user,
+                to_user=comment.author,
+                comment=comment,
+            )
         else:
             comment.likes.remove(request.user)
 
-        next = request.POST.get('next', '/')
+        next = request.POST.get("next", "/")
         return HttpResponseRedirect(next)
 
 
@@ -343,7 +351,7 @@ class RemoveCommentLike(LoginRequiredMixin, View):
         else:
             comment.dislikes.add(request.user)
 
-        next = request.POST.get('next', '/')
+        next = request.POST.get("next", "/")
         return HttpResponseRedirect(next)
 
 
@@ -355,7 +363,7 @@ class PostNotification(View):
         notification.user_has_seen = True
         notification.save()
 
-        return redirect('post_detail', pk=post_pk)
+        return redirect("post_detail", pk=post_pk)
 
 
 class FollowNotification(View):
@@ -366,7 +374,7 @@ class FollowNotification(View):
         notification.user_has_seen = True
         notification.save()
 
-        return redirect('profile', pk=profile_pk)
+        return redirect("profile", pk=profile_pk)
 
 
 class RemoveNotification(View):
@@ -374,22 +382,23 @@ class RemoveNotification(View):
         notification = Notification.objects.get(pk=notification_pk)
         notification.user_has_seen = True
         notification.save()
-        next = request.POST.get('next', '/')
+        next = request.POST.get("next", "/")
         return HttpResponseRedirect(next)
 
 
 def online_true(request):
-    username = request.POST.get('username')
+    username = request.POST.get("username")
     user = User.objects.get(username=username)
     profile = UserProfile.objects.get(user=user)
     profile.online = True
     profile.save()
-    return JsonResponse({'status': 200})
+    return JsonResponse({"status": 200})
+
 
 def online_false(request):
-    username = request.POST.get('username')
+    username = request.POST.get("username")
     user = User.objects.get(username=username)
     profile = UserProfile.objects.get(user=user)
     profile.online = False
     profile.save()
-    return JsonResponse({'status': 200})
+    return JsonResponse({"status": 200})
